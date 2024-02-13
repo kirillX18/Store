@@ -4,6 +4,11 @@ import sqlite3
 bot = telebot.TeleBot('6976665995:AAFpU6EVnT3eVx-WEIR5Lt7Yqw-Cd73TnmU')
 name = None
 amel = None
+id = None
+Sed_message = None
+previous_message_text = None
+order = ''
+possible_orders = ['Чекинбургер', 0, 'Фишбургер', 0, 'Чисбургер', 0, 'Спайси', 0, 'Классика', 0, 'Фитнес', 0, 'Грудка', 0, 'Ножка', 0, 'Крылья', 0, 'Кола', 0, 'Спрайт', 0, 'Липтон', 0]
 
 @bot.message_handler(commands=['start'])
 def main(message):
@@ -15,8 +20,10 @@ def main(message):
     cur.close()
     con.close()
 
-
-    bot.send_message(message.chat.id, 'Привет, это магазин товаров давайте зарегистрируем вас, напишите своё имя')
+    fail = open('./Velcom.jpg', 'rb')
+    w = bot.send_photo(message.chat.id, fail, 'Привет, это магазин товаров давайте зарегистрируем вас, напишите своё имя')
+    photo_id = w.photo[-1].file_id
+    fail.close()
     bot.register_next_step_handler(message, user_name)
 
 def user_name(message):
@@ -32,6 +39,8 @@ def user_amel(message):
     bot.register_next_step_handler(message, user_pass)
 
 def user_pass(message):
+    global id
+    global previous_message_text
     pass1 = message.text.strip()
     con = sqlite3.connect('tovars.sql')
     cur = con.cursor()
@@ -49,39 +58,51 @@ def user_pass(message):
     markup.row(btn1, btn2)
     markup.row(btn3, btn4)
 
-    bot.send_message(message.chat.id, f'Здравствуйте {name}, вы успешно зарегистрировались', reply_markup=markup)
+    gh = bot.send_message(message.chat.id, f'Здравствуйте {name}, вы успешно зарегистрировались', reply_markup=markup)
+    id = gh.message_id
+    previous_message_text = id
 
 
 @bot.callback_query_handler(func=lambda callback: True)
 def callback_massage(callback):
-    markup1 = types.InlineKeyboardMarkup(row_width=1)
-    markup1.add(types.InlineKeyboardButton('Чекинбургер', callback_data='KL'),
-                types.InlineKeyboardButton('Фишбургер', callback_data='F'),
-                types.InlineKeyboardButton('Чисбургер', callback_data='C'))
+    global id
+    global previous_message_text
+    global Sed_message
+    global order
+    global possible_orders
+    burgers = ['1.Чекинбургер', '2.Фишбургер', '3.Чисбургер']
+    тortillas = ['4.Спайси', '5.Классика', '6.Фитнес']
+    ciken = ['7.Ножка', '8.Крылья', '9.Грутка']
+    drinks = ['10.Кола', '11.Спрайт', '12.Липтон']
 
-    markup2 = types.InlineKeyboardMarkup(row_width=1)
-    markup2.add(types.InlineKeyboardButton('Спайси', callback_data='KL'),
-                types.InlineKeyboardButton('Классика', callback_data='F'),
-                types.InlineKeyboardButton('Фитнес', callback_data='C'))
-
-    markup3 = types.InlineKeyboardMarkup(row_width=1)
-    markup3.add(types.InlineKeyboardButton('Грудка', callback_data='KL'),
-                types.InlineKeyboardButton('Ножка', callback_data='F'),
-                types.InlineKeyboardButton('Крылья', callback_data='C'))
-
-    markup4 = types.InlineKeyboardMarkup(row_width=1)
-    markup4.add(types.InlineKeyboardButton('Кола', callback_data='KL'),
-                types.InlineKeyboardButton('Спрайт', callback_data='F'),
-                types.InlineKeyboardButton('Липтон', callback_data='C'))
 
     if callback.data == 'byrger':
-        bot.send_message(callback.message.chat.id, 'Бургеры', reply_markup=markup1 )
+        if previous_message_text != id:
+            bot.delete_message(callback.message.chat.id, Sed_message.message_id)
+        spisoc = '\n'.join(burgers)
+        Sed_message = bot.send_message(callback.message.chat.id, spisoc)
+        previous_message_text = Sed_message.message_id
     if callback.data == 'tartil':
-        bot.send_message(callback.message.chat.id, 'Тортили', reply_markup=markup2)
+        if previous_message_text != id:
+            bot.delete_message(callback.message.chat.id, Sed_message.message_id)
+        spisoc = '\n'.join(тortillas)
+        Sed_message = bot.send_message(callback.message.chat.id, spisoc)
+        previous_message_text = Sed_message.message_id
     if callback.data == 'ciken':
-        bot.send_message(callback.message.chat.id, 'Курица', reply_markup=markup3)
+        if previous_message_text != id:
+            bot.delete_message(callback.message.chat.id, Sed_message.message_id)
+        spisoc = '\n'.join(ciken)
+        Sed_message = bot.send_message(callback.message.chat.id, spisoc)
+        previous_message_text = Sed_message.message_id
     if callback.data == 'drinc':
-        bot.send_message(callback.message.chat.id, 'Напитки', reply_markup=markup4)
+        if previous_message_text != id:
+            bot.delete_message(callback.message.chat.id, Sed_message.message_id)
+        spisoc = '\n'.join(drinks)
+        Sed_message = bot.send_message(callback.message.chat.id, spisoc)
+        previous_message_text = Sed_message.message_id
+
+
+
 
 if __name__ == "__main__":
     bot.polling(none_stop=True)
