@@ -1,9 +1,8 @@
 import telebot
 from telebot import types
 import sqlite3
-bot = telebot.TeleBot('6976665995:AAFpU6EVnT3eVx-WEIR5Lt7Yqw-Cd73TnmU')
-name = None
-amel = None
+import config
+bot = telebot.TeleBot(config.TOKEN)
 id = None
 Sed_message = None
 previous_message_text = None
@@ -27,18 +26,16 @@ def main(message):
     bot.register_next_step_handler(message, user_name)
 
 def user_name(message):
-    global name
     name = message.text.strip()
     bot.send_message(message.chat.id, 'Ведите почту')
-    bot.register_next_step_handler(message, user_amel)
+    bot.register_next_step_handler(message, user_amel,name=name)
 
-def user_amel(message):
-    global amel
+def user_amel(message,name):
     amel = message.text.strip()
     bot.send_message(message.chat.id, 'Ведите пароль')
-    bot.register_next_step_handler(message, user_pass)
+    bot.register_next_step_handler(message, user_pass, name=name, amel=amel)
 
-def user_pass(message):
+def user_pass(message,name,amel):
     global id
     global previous_message_text
     pass1 = message.text.strip()
